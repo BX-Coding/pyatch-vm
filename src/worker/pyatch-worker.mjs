@@ -36,7 +36,14 @@ class PyatchWorker {
     }
 
     handleWorkerError(event) {
-        throw new Error(`Worker error with event: ${event}`);
+        //throw new Error(`Worker error with event: ${event}`);
+        let errorArr= [{
+            "name" : event.data.error.toString(),
+            "line" : 1,
+            "sprite" : event.data.threadID
+        }];
+        pyatchVM.emit('ERROR_CAUGHT', errorArr);
+        pyatchVM.stopAll();
     }
 
     async loadPyodide() {
