@@ -41,7 +41,7 @@ class PyatchWorker {
         let errorArr= [{
             "name" : "nameofErr",
             "line" : 1,
-            "sprite" : event.data.threadID
+            "sprite" : event.data.threadId
         }];
         pyatchVM.emit('ERROR_CAUGHT', errorArr);
         pyatchVM.stopAll();
