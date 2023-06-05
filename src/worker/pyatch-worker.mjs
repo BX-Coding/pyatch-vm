@@ -37,8 +37,9 @@ class PyatchWorker {
 
     handleWorkerError(event) {
         //throw new Error(`Worker error with event: ${event}`);
+        console.log('update 1');
         let errorArr= [{
-            "name" : event.data.error.toString(),
+            "name" : event.data.toString(),
             "line" : 1,
             "sprite" : event.data.threadID
         }];
