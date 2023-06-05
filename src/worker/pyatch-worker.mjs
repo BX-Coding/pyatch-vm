@@ -38,13 +38,13 @@ class PyatchWorker {
     handleWorkerError(event) {
         //throw new Error(`Worker error with event: ${event}`);
         console.log('update 1');
+        pyatchVM.stopAll();
         let errorArr= [{
             "name" : "nameofErr",
             "line" : 1,
-            "sprite" : event.data.threadId
+            "sprite" : 1
         }];
         pyatchVM.emit('ERROR_CAUGHT', errorArr);
-        pyatchVM.stopAll();
     }
 
     async loadPyodide() {
