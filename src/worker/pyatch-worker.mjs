@@ -1,6 +1,7 @@
 import Worker from "web-worker";
 import _ from "lodash";
 import WorkerMessages from "./worker-messages.mjs";
+import {translateLine} from "../linker/pyatch-linker.mjs"
 
 class PyatchWorker {
     constructor(blockOPCallback) {
@@ -39,10 +40,16 @@ class PyatchWorker {
         //throw new Error(`Worker error with event: ${event}`);
         console.log('update 1');
         pyatchVM.stopAll();
+        if(event.data.error.lineNumber){
+            let generatedLine = event.data.error.lineNumber;
+        }else{
+            //lineCode but need to figure out which line I am actually using
+            let generatedLine = 1;
+        }
         let errorArr= [{
-            "name" : "nameofErr",
-            "line" : 1,
-            "sprite" : 1
+            "name" : event.data.error.toString(),
+            "line" : translateLine(generatedLine),
+            "sprite" : event.data.threadId
         }];
         pyatchVM.emit('ERROR_CAUGHT', errorArr);
     }
