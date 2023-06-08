@@ -1,4 +1,4 @@
-import _ from "lodash";
+import _, { head } from "lodash";
 import linkConstants from "./linker-constants.mjs";
 import PrimProxy from "../worker/prim-proxy.js";
 
@@ -116,16 +116,15 @@ class PyatchLinker {
     countLines(code){
         let numLines = 0;
         for(let i = 0; i < code.length; i++){
-        if(code[i]=='\n'){
-            numLines++;
-        }
+            if(code[i]=='\n'){
+                numLines++;
+            }
         }
         numLines++;
         return numLines;
     }
 
     wrapThreadCode(threadCode, threadId, globalVariables) {
-        let numAdded = 0;
         let variabelSnippet = "";
         if (globalVariables) {
             variabelSnippet = this.registerGlobalsImports(globalVariables);
@@ -138,6 +137,8 @@ class PyatchLinker {
 
         const header = this.generateAsyncFuncHeader(threadId);
         const registerPrimsSnippet = this.registerProxyPrims(calledPatchPrimitiveFunctions);
+        let numAdded = this.countLines(header) + this.countLines(variabelSnippet) + this.countLines(registerPrimsSnippet);
+        this.locOfGenerated[threadId] = numAdded;
         return `${header + variabelSnippet + registerPrimsSnippet + linkConstants.python_tab_char + tabbedCode}\n\n`;
     }
 
@@ -152,8 +153,7 @@ class PyatchLinker {
     
     //input threadId and line of generated code, output identical line of original code
     translateLine(threadId, line){
-        let comparisonCode = linesOfGeneratedCode[threadId][line];
-        let context = "";
+        return line-this.locOfGenerated[threadId];
     }
     /**
      * Generate the fully linked executable python code.

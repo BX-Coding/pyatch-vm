@@ -38,19 +38,25 @@ class PyatchWorker {
 
     handleWorkerError(event) {
         //throw new Error(`Worker error with event: ${event}`);
-        console.log('update 1');
+
+        //need to find a way to call vm functions
         pyatchVM.stopAll();
+
+        let generatedLine = 1;
+        //if firefox do easy, otherwise going to need to find the line number in error text
         if(event.data.error.lineNumber){
-            let generatedLine = event.data.error.lineNumber;
+            generatedLine = event.data.error.lineNumber;
         }else{
             //lineCode but need to figure out which line I am actually using
-            let generatedLine = 1;
+            generatedLine = 1;
         }
         let errorArr= [{
             "name" : event.data.error.toString(),
-            "line" : translateLine(generatedLine),
+            "line" : translateLine(event.data.threadId, generatedLine),
             "sprite" : event.data.threadId
         }];
+
+        //need to find a way to call vm functions
         pyatchVM.emit('ERROR_CAUGHT', errorArr);
     }
 
