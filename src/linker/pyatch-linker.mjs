@@ -10,12 +10,9 @@ import PrimProxy from "../worker/prim-proxy.js";
  * This code is almost definitely not safe. Eventually, each targets python code will be executed in a separate worker.
  */
 class PyatchLinker {
-    // event id is key and lines of code for that event
-    let linesOfGeneratedCode = [];
-    let linesOfOriginalCode = [];
-    
     constructor() {
         this._baseImports = [];
+        this.locOfGenerated = [];
     }
 
     /**
@@ -116,7 +113,19 @@ class PyatchLinker {
         return pythonCode.replace(regex, "await $&");
     }
 
+    countLines(code){
+        let numLines = 0;
+        for(let i = 0; i < code.length; i++){
+        if(code[i]=='\n'){
+            numLines++;
+        }
+        }
+        numLines++;
+        return numLines;
+    }
+
     wrapThreadCode(threadCode, threadId, globalVariables) {
+        let numAdded = 0;
         let variabelSnippet = "";
         if (globalVariables) {
             variabelSnippet = this.registerGlobalsImports(globalVariables);
@@ -142,33 +151,9 @@ class PyatchLinker {
     }
     
     //input threadId and line of generated code, output identical line of original code
-    export translateLine(threadId, line){
+    translateLine(threadId, line){
         let comparisonCode = linesOfGeneratedCode[threadId][line];
         let context = "";
-        if(linesOfGeneratedCode[threadId][line+1]){
-            let context = linesOfGeneratedCode[threadId][line+1];
-            for(int i=0; i<linesOfOriginalCode[threadId].length){
-                if(linesOfOriginalCode[threadId][i].equals(comparisonCode) && linesOfOriginalCode[threadId][line+1].equals(context)){
-                    return i;
-                }
-            }
-                
-        }
-        else if(linesOfGeneratedCode[threadId][line-1]){
-            let context = linesOfGeneratedCode[threadId][line-1];
-            for(int i=0; i<linesOfOriginalCode[threadId].length){
-                if(linesOfOriginalCode[threadId][i].equals(comparisonCode) && linesOfOriginalCode[threadId][line-1].equals(context)){
-                    return i;
-                }
-            }
-        }
-        else{
-            for(int i=0; i<linesOfOriginalCode[threadId].length){
-                if(linesOfOriginalCode[threadId][i].equals(comparisonCode)){
-                    return i;
-                }
-            }
-        }
     }
     /**
      * Generate the fully linked executable python code.
@@ -203,33 +188,6 @@ class PyatchLinker {
                     eventMap[eventId].push(threadId);
                     
                     //adds the lines of this *thread* to the linesoforiginal array
-                    let linesOfCode = [];
-                    let prev = 0;
-                    for(let i = 0; i < thread.length; i++){
-                        if(thread[i]=='\n'){
-                        linesOfCode.push(thread.substring(prev, i));
-                        prev = i+1;
-                        }
-                    }
-                    linesOfCode.push(thread.substring(prev, thread.length));
-                    }
-                    linesOfOriginalCode[threadId]=linesOfCode;
-                        }
-                    });
-
-                    //adds the lines of this *generate codestring* to the linesofgenerated array
-                    prev = 0;
-                    let currentString = "";
-                    for(let i = 0; i < codeString.length; i++){
-                        if(codeString[i]=='\n'){
-                        currentString = codeString.substring(prev, i).replaceAll("\t", "");
-                        linesOfCode.push(codeString.substring(prev, i));
-                        prev = i+1;
-                        }
-                    }
-                    linesOfCode.push(codeString.substring(prev, codeString.length));
-                    }
-                    linesOfGeneratedCode[threadId]=linesOfCode;
                         }
                     });
         });
