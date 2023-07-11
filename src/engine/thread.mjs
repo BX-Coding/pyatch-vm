@@ -41,6 +41,12 @@ class Thread {
         this.loadPromise = this.loadThread(this.script);
 
         this.interruptThread = false;
+
+        this.instructionsExecuted = 0;
+    }
+
+    getInstructionsExecuted() {
+        return this.instructionsExecuted;
     }
 
     async loadThread(script) {
@@ -83,6 +89,7 @@ class Thread {
             if (this.status === Thread.STATUS_YIELD_TICK || this.status === Thread.STATUS_RUNNING) {
                 this.status = Thread.STATUS_RUNNING;
                 const result = await blockFunction(args, util);
+                this.instructionsExecuted += 1;
 
                 if (this.status === Thread.STATUS_YIELD_TICK) {
                     setTimeout(tick.bind(this, resolve), Thread.THREAD_STEP_INTERVAL);
