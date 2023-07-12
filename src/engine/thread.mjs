@@ -89,11 +89,11 @@ class Thread {
             if (this.status === Thread.STATUS_YIELD_TICK || this.status === Thread.STATUS_RUNNING) {
                 this.status = Thread.STATUS_RUNNING;
                 const result = await blockFunction(args, util);
-                this.instructionsExecuted += 1;
 
                 if (this.status === Thread.STATUS_YIELD_TICK) {
                     setTimeout(tick.bind(this, resolve), Thread.THREAD_STEP_INTERVAL);
                 } else {
+                    this.instructionsExecuted += 1;
                     resolve(result);
                 }
             }

@@ -22,6 +22,8 @@
         "test:prims": "node --experimental-modules node_modules/mocha/bin/_mocha test/primitives/*.mjs --reporter spec",
         "test:vm": "node --experimental-modules node_modules/mocha/bin/_mocha test/scratch_vm/*.mjs --reporter spec",
         "test:errors": "node --experimental-modules node_modules/mocha/bin/_mocha test/integration/integration_errors.test.mjs --reporter spec",
+        "benchmark:multi": "node --experimental-modules benchmarks/multi-thread-execution-rate.mjs",
+        "benchmark:block-exec": "node --experimental-modules benchmarks/block-execution-speed.mjs",
         "lint": "eslint ./ --ext=.js,.mjs,.json",
         "lint:fix": "eslint ./ --fix --ext=.js,.mjs,.json",
         "prepare": "husky install"

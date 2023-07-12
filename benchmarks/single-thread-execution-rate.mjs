@@ -1,10 +1,9 @@
 import fs from "fs";
 import path from "path";
 import * as url from "url";
-import VirtualMachine from "../../src/virtual-machine.mjs";
-import Sprite from "../../src/sprites/sprite.mjs";
-import RenderedTarget from "../../src/sprites/rendered-target.mjs";
-import resetTarget from "../fixtures/reset-target.mjs";
+import VirtualMachine from "../src/virtual-machine.mjs";
+import Sprite from "../src/sprites/sprite.mjs";
+import RenderedTarget from "../src/sprites/rendered-target.mjs";
 
 const __dirname = url.fileURLToPath(new URL(".", import.meta.url));
 
