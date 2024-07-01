@@ -20,6 +20,8 @@ export default class ScratchConverter {
 
    scratchOperatorConverter = new ScratchConversionOperator();
 
+   scratchProject = null;
+
    /**
     *
     * @param {ArrayBuffer} scratchData An ArrayBuffer representation of the .sb3 file to convert
@@ -34,9 +36,12 @@ export default class ScratchConverter {
     * @returns {ArrayBuffer} The Patch project (.ptch1) represented as an array buffer
     */
    async getPatchArrayBuffer() {
-      const scratchZip = await JSZip.loadAsync(this.data).then((newZip) => newZip);
+      // const scratchZip = await JSZip.loadAsync(this.data).then((newZip) => newZip);
+      const file = new File(this.data, "myProject.sb3");
+      this.scratchProject = await Project.fromSb3(file);
 
-      const projectJson = await this.getPatchProjectJsonBlob(scratchZip).then((blob) => blob);
+      // const projectJson = await this.getPatchProjectJsonBlob(scratchZip).then((blob) => blob);
+      const projectJson = await this.scratchProject.toPatch();
       if (!projectJson) {
          return null;
       }
@@ -45,22 +50,22 @@ export default class ScratchConverter {
 
       zip.file("project.json", projectJson);
 
-      const scratchFilesKeys = Object.keys(scratchZip.files);
+      // const scratchFilesKeys = Object.keys(file);
 
-      const filePromises = [];
+      // const filePromises = [];
 
-      // eslint-disable-next-line no-restricted-syntax
-      for (const key of scratchFilesKeys) {
-         if (key !== "project.json") {
-            // TODO: consider checking if the file is an actual media file?
-            filePromises.push(scratchZip.files[key].async("arraybuffer").then((arrayBuffer) => ({key: key, arrayBuffer: arrayBuffer})));
-         }
-      }
+      // // eslint-disable-next-line no-restricted-syntax
+      // for (const key of scratchFilesKeys) {
+      //    if (key !== "project.json") {
+      //       // TODO: consider checking if the file is an actual media file?
+      //       filePromises.push(scratchZip.files[key].async("arraybuffer").then((arrayBuffer) => ({key: key, arrayBuffer: arrayBuffer})));
+      //    }
+      // }
 
-      const files = await Promise.all(filePromises);
-      files.forEach(file => {
-         zip.file(file.key, file.arrayBuffer);
-      });
+      // const files = await Promise.all(filePromises);
+      // files.forEach(file => {
+      //    zip.file(file.key, file.arrayBuffer);
+      // });
 
       const zippedProject = await zip.generateAsync({ type: "arraybuffer" }).then((content) => content);
       return zippedProject;
