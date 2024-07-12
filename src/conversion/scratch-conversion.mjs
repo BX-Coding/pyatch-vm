@@ -7,6 +7,7 @@ import PatchTargetThread from "./patch-target-thread.mjs";
 
 import ScratchConversionControl from "./scratch-conversion-control.mjs";
 import ScratchConversionOperator from "./scratch-conversion-operator.mjs";
+import ScratchConversionData from "./scratch-conversion-data.mjs";
 
 import { processInputs } from "./scratch-conversion-helper.mjs";
 import Scratch3ControlBlocks from "../blocks/scratch3_control.mjs";
@@ -19,6 +20,8 @@ export default class ScratchConverter {
    scratchControlConverter = new ScratchConversionControl();
 
    scratchOperatorConverter = new ScratchConversionOperator();
+
+   scratchDataConverter = new ScratchConversionData();
 
    /**
     *
@@ -97,6 +100,7 @@ export default class ScratchConverter {
       for (let i = 0; i < vmState.targets.length; i++) {
          vmState.targets[i].blocks = {};
          vmState.targets[i].variables = {};
+         vmState.targets[i].lists = {};
          vmState.targets[i].broadcasts = {};
       }
 
@@ -159,6 +163,9 @@ export default class ScratchConverter {
                thread.script += `${conversionResult}\n`;
             } else if (opcode.substring(0, 9) === "operator_") {
                const conversionResult = this.scratchOperatorConverter.convertOperatorBlock(blocks, currentBlockId, patchApi, patchApiKeys, this.convertBlocksPart, this);
+               thread.script += `${conversionResult}\n`;
+            } else if (opcode.substring(0, 5) === "data_") {
+               const conversionResult = this.scratchDataConverter.convertDataBlock(blocks, currentBlockId, patchApi, patchApiKeys, this.convertBlocksPart, this);
                thread.script += `${conversionResult}\n`;
             } else {
                // Couldn't find the opcode in the map.
