@@ -2,6 +2,10 @@
 import patchApi from "./conversion-layer.mjs";
 import PatchTargetThread from "./patch-target-thread.mjs";
 
+import convertControlBlock from "./scratch-conversion-control.mjs";
+import convertDataBlock from "./scratch-conversion-data.mjs";
+import convertOperatorBlock from "./scratch-conversion-operator.mjs";
+
 // 0: number, 1: string, 2: nested, -1: error
 export function getArgType(inputJson) {
    const argType = inputJson[1][0];
@@ -168,13 +172,13 @@ export function convertBlocksPart(target, hatId, nextId) {
 
       if (!patchKey) {
          if (opcode.substring(0, 8) === "control_") {
-            const conversionResult = this.scratchControlConverter.convertControlBlock(target, currentBlockId);
+            const conversionResult = convertControlBlock(target, currentBlockId, processInputs, indentLines, convertBlocksPart);
             thread.script += `${conversionResult}\n`;
          } else if (opcode.substring(0, 9) === "operator_") {
-            const conversionResult = this.scratchOperatorConverter.convertOperatorBlock(target, currentBlockId);
+            const conversionResult = convertOperatorBlock(target, currentBlockId, processInputs);
             thread.script += `${conversionResult}\n`;
          } else if (opcode.substring(0, 5) === "data_") {
-            const conversionResult = this.scratchDataConverter.convertDataBlock(target, currentBlockId);
+            const conversionResult = convertDataBlock(target, currentBlockId, processInputs);
             thread.script += `${conversionResult}\n`;
          } else {
             // Couldn't find the opcode in the map.

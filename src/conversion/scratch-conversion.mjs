@@ -2,24 +2,14 @@ import JSZip from "jszip";
 
 import Scratch3EventBlocks from "../blocks/scratch3_event.mjs";
 
-import ScratchConversionControl from "./scratch-conversion-control.mjs";
-import ScratchConversionOperator from "./scratch-conversion-operator.mjs";
-import ScratchConversionData from "./scratch-conversion-data.mjs";
-
 import Scratch3ControlBlocks from "../blocks/scratch3_control.mjs";
 
-import patchApi from "./conversion-layer.mjs";
+import { convertBlocksPart } from "./scratch-conversion-helper.mjs";
 
 export default class ScratchConverter {
    data = null;
 
    scratchJson = null;
-
-   scratchControlConverter = new ScratchConversionControl();
-
-   scratchOperatorConverter = new ScratchConversionOperator();
-
-   scratchDataConverter = new ScratchConversionData();
 
    /**
     *
@@ -91,7 +81,7 @@ export default class ScratchConverter {
 
       // Step 1: blocks + variables to code; then add code
       for (let i = 0; i < vmState.targets.length; i++) {
-         vmState.targets[i].threads = this.convertTargetBlocks(vmState.targets[i].blocks, vmState.targets[i].variables, vmState.targets[i].name);
+         vmState.targets[i].threads = this.convertTargetBlocks(vmState.targets[i]);
       }
 
       // Step 2: remove blocks (this isn't strictly necessary) and variables + broadcasts (this is necessary)
@@ -99,7 +89,10 @@ export default class ScratchConverter {
       // remover however.
       for (let i = 0; i < vmState.targets.length; i++) {
          vmState.targets[i].blocks = {};
-         vmState.targets[i].variables.forEach(variable => {
+         const variableKeys = Object.keys(vmState.targets[i].variables);
+         variableKeys.forEach(key => {
+            const variable = vmState.targets[i].variables[key];
+            console.log(variable);
             if (vmState.targets[i].isStage) {
                // In Scratch, global variables are actually stored as sprite variables on the stage.
                globalVariables.push({name: variable[0], value: variable[1]});
@@ -120,7 +113,8 @@ export default class ScratchConverter {
 
       // Step 4: make everything a child of "vmstate" and add global variables
       // TODO: global variables
-      const baseJson = { vmstate: vmState, globalVariables: [] };
+      console.log(globalVariables);
+      const baseJson = { vmstate: vmState, globalVariables: globalVariables };
 
       // Step 4: convert this back to a blob, make everything a child of "vmstate", and return it.
       const newJsonBlob = new Blob([JSON.stringify(baseJson)], { type: "application/json" });
@@ -135,9 +129,11 @@ export default class ScratchConverter {
     * @param {Object.<string, [Number, String]>} variables
     * @returns {PatchTargetThread[]} An array of object representations of the patch threads
     */
-   convertTargetBlocks(blocks, variables, spriteName) {
+   convertTargetBlocks(target) {
       // TODO: convert variables
       // https://en.scratch-wiki.info/wiki/Scratch_File_Format#Blocks
+
+      const {blocks} = target;
 
       const blocksKeys = Object.keys(blocks);
 
@@ -157,10 +153,8 @@ export default class ScratchConverter {
          }
       });
 
-      const patchApiKeys = Object.keys(patchApi);
-
       hatLocations.forEach(hatId => {
-         const returnValPart = this.convertBlocksPart(blocks, hatId, blocks[hatId].next, patchApi, patchApiKeys, spriteName);
+         const returnValPart = convertBlocksPart(target, hatId, blocks[hatId].next);
 
          if (returnValPart.script.includes("math.")) {
             returnValPart.script = `import math\n\n${ returnValPart.script }`;
