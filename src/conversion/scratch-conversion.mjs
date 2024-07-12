@@ -83,6 +83,8 @@ export default class ScratchConverter {
       const jsonDataString = await zip.files["project.json"].async("text").then((text) => text);
       const vmState = JSON.parse(jsonDataString);
 
+      const globalVariables = [];
+
       // This function will convert each target's blocks and local variables into Patch code.
       // Then, it will remove the blocks from the JSON (not strictly necessary) and handle backgrounds and other
       // things that Patch and Scratch store differently. Also, everything will be moved to being a child of a json
@@ -99,6 +101,14 @@ export default class ScratchConverter {
       // remover however.
       for (let i = 0; i < vmState.targets.length; i++) {
          vmState.targets[i].blocks = {};
+         vmState.targets[i].variables.forEach(variable => {
+            if (vmState.targets[i].isStage) {
+               // In Scratch, global variables are actually stored as sprite variables on the stage.
+               globalVariables.push({name: variable[0], value: variable[1]});
+            } else {
+               globalVariables.push({name: `${vmState.targets[i].name}_${variable[0]}`, value: variable[1]});
+            }
+         });
          vmState.targets[i].variables = {};
          vmState.targets[i].lists = {};
          vmState.targets[i].broadcasts = {};
